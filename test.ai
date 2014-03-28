@@ -1,0 +1,62 @@
+// 处理怪物AI
+code(name="start",lib="NPCLIB")
+{
+	calc(name="3+2")
+	{
+		calc("#name>=4")
+		{
+			怪物.talk(value="10000111, 你好 哈哈 ")
+			{
+				print("回调 #index");
+				var(name="怪物.a",value="100000");
+				print("默认访问怪物的a变量 $a");
+			}
+			print("我的编号 #index");
+			//怪物.说话(value="xxxx");
+		}
+		var(name="怪物.a",value="100-#name");
+		print("输出: #name #index");
+	}
+	print("name的数值: #name");
+	var(name="怪物.a",value="100-#name");
+}
+// 可以处理技能系统
+code(name="init",lib="SKILLLIB")
+{
+	print("技能的初始化");
+	skill.at(frame="1")
+	{
+		print("当前frame: #frame"); // 在第一帧的时候调用 这是回调模块 需要C++支持
+	}
+} 
+// 服务器启动的时候 theLang.exec("decode");
+// 开始处理网络数据了 可以作为服务器解码系统存在
+code(name="decode",lib="NETLIB")
+{
+	net.get(len="10") // 当接受10个子节点时 处理
+	{
+		net.get(len="#bodysize") // 当接受到bodysize的数据后处理
+		{
+			string.unzip(size=#size,offset=10)
+			{
+				string.undes(content=#body,size#size,offset=10)
+				{
+					theLogic.deal(content="#body",size="#size"); // 处理数据
+				}
+			}
+			exec("decode"); // 继续下一波处理
+		}
+	}
+}
+// 解码器,结果在string 里
+code(name="encode",lib="NETLIB")
+{
+	string.des(content=#body,size=#size,offset=10)
+	{
+		string.zip(content=#body,size=#size,offset=10)
+		{
+			string.set(content=#size,offset=0);
+		}
+	}
+	body.print(); // body可以输出
+}
